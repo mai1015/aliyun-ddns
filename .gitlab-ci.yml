@@ -1,0 +1,15 @@
+image: golang:1.12-alpine
+
+
+variables:
+    DOCKER_IMAGE: registry.gitlab.com/${CI_PROJECT_PATH}
+    GOFLAGS: -mod=readonly
+    GOPATH: ${CI_PROJECT_DIR}/vendor/go
+
+stages:
+    - dependencies
+    - test
+    - build
+    - packaging
+
+    
