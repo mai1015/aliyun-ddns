@@ -17,7 +17,9 @@ stages:
 
 dependencies:
     stage: dependencies
-    script: go mod download
+    script: 
+        - apk add --update --no-cache git
+        - go mod download
     cache: *modcache
 
 build:
