@@ -5,6 +5,7 @@ variables:
     GOFLAGS: -mod=readonly
     GOPATH: ${CI_PROJECT_DIR}/vendor/go
     GO111MODULE: "on"
+    GOPROXY: https://goproxy.io
 
 stages:
     - dependencies
