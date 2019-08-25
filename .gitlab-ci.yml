@@ -1,6 +1,5 @@
 image: golang:1.12-alpine
 
-
 variables:
     DOCKER_IMAGE: registry.gitlab.com/${CI_PROJECT_PATH}
     GOFLAGS: -mod=readonly
@@ -8,8 +7,31 @@ variables:
 
 stages:
     - dependencies
-    - test
     - build
     - packaging
 
-    
+.modcache: &modcache
+    key: "$CI_COMMIT_REF_NAME"
+    paths:
+        - vendor/go/pkg/mod/
+
+dependencies:
+    stage: dependencies
+    script: go mod download
+    cache: *modcache
+
+build:
+    stage: build
+    cache:
+        <<: *modcache
+        policy: pull
+    variables:
+        CGO_ENABLED: 0
+        GOOS: linux
+        GOARCH: amd64
+    artifacts:
+        paths: ["build/"]
+        expire_in: 1 day
+    script:
+        - export CI_BUILD_DATE=$(date +%FT%T%z)
+        - go build -v -ldflags "-X main.version=${CI_COMMIT_REF_NAME -X main.commitHash=${CI_COMMIT_SHA} -X main.buildDate=${CI_BUILD_DATE}" -o build/main main/*.go
