@@ -4,6 +4,7 @@ variables:
     DOCKER_IMAGE: registry.gitlab.com/${CI_PROJECT_PATH}
     GOFLAGS: -mod=readonly
     GOPATH: ${CI_PROJECT_DIR}/vendor/go
+    GO111MODULE: "on"
 
 stages:
     - dependencies
@@ -27,13 +28,9 @@ build:
     cache:
         <<: *modcache
         policy: pull
-    variables:
-        CGO_ENABLED: 0
-        GOOS: linux
-        GOARCH: amd64
     artifacts:
         paths: ["build/"]
         expire_in: 1 day
     script:
         - export CI_BUILD_DATE=$(date +%FT%T%z)
-        - go build -v -ldflags "-X main.version=${CI_COMMIT_REF_NAME -X main.commitHash=${CI_COMMIT_SHA} -X main.buildDate=${CI_BUILD_DATE}" -o build/main main/*.go
+        - GO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CI_COMMIT_REF_NAME -X main.commitHash=${CI_COMMIT_SHA} -X main.buildDate=${CI_BUILD_DATE}" -o build/main main/*.go
