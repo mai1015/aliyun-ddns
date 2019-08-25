@@ -39,11 +39,6 @@ build:
 docker:
     image: docker:stable
     stage: packaging
-    variables:
-        DOCKER_HOST: tcp://docker:2375/
-        DOCKER_DRIVER: overlay2
-    services:
-        - docker:dind
     before_script:
         - docker info
         - apk add --update --no-cache ca-certificates make
