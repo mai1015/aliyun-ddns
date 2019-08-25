@@ -25,6 +25,7 @@ var (
 	domain string
 	ttl int
 	delete bool
+	value string
 )
 
 var (
@@ -47,6 +48,7 @@ func init() {
 	flag.IntVar(&interval, "i", getenvInt("INTERVAL", -1), "time interval. -1 means it will only run once.")
 	flag.IntVar(&ttl, "l", getenvInt("TTL", 600), "time")
 	flag.BoolVar(&delete, "x", false, "delete domains from rr")
+	flag.StringVar(&value, "v", "", "set value")
 	flag.Parse()
 	// dealing
 
@@ -98,6 +100,22 @@ func main() {
 		}
 		return
 	}
+
+	if len(value) != 0 {
+		Logger.Println("Staring to manual set")
+		for _, r := range rr {
+			for _, t := range ts {
+				resp, _ := AddDomainRecord(domain, r, ttl, t, value)
+				if resp != nil {
+					Logger.Printf("Successfully add domain %s record %s for %s at default line.\n", t, value,  r + "." + domain)
+				} else {
+					Logger.Printf("failed to add record(s) from domain %s.\n", r + "." + domain)
+				}
+			}
+		}
+		return
+	}
+
 	Logger.Println("Staring")
 	for true {
 		routing()

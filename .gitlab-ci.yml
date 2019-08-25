@@ -34,4 +34,15 @@ build:
         expire_in: 1 day
     script:
         - export CI_BUILD_DATE=$(date +%FT%T%z)
-        - GO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CI_COMMIT_REF_NAME -X main.commitHash=${CI_COMMIT_SHA} -X main.buildDate=${CI_BUILD_DATE}" -o build/main main/*.go
+        - GO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CI_COMMIT_REF_NAME} -X main.commitHash=${CI_COMMIT_SHA} -X main.buildDate=${CI_BUILD_DATE}" -o build/main main/*.go
+
+docker:
+    image: docker:stable
+    stage: packaging
+    variables:
+        DOCKER_HOST: tcp://docker:2375/
+        DOCKER_DRIVER: overlay2
+    services:
+        - docker:dind
+    script:
+        - 
