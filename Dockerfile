@@ -1,6 +1,6 @@
 FROM golang:1.12-alpine as builder
 
-ENV GO111MODULE=on
+ENV GO111MODULE=on GOPROXY=https://goproxy.io
 
 RUN apk add --update --no-cache git
 
