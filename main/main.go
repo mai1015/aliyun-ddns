@@ -144,10 +144,10 @@ func doDomain(r, t string) {
 	Debug.Printf("doDomain(%s, %s)", r, t)
 	ip := getIP(t)
 	if len(ip) <= 0 {
-		Logger.Printf("no valid ip address! cant set for %s.\n", r + "." + domain)
+		Logger.Printf("no valid ip address! cant set %s type for %s.\n", t, r + "." + domain)
 		return
 	}
-	Logger.Printf("try to update domain %s", r + "." + domain)
+	Debug.Printf("try to update domain %s for %s type.\n", r + "." + domain, t)
 	resp, err := GetDomainRecord(domain, r, t)
 	if err != nil {
 		Logger.Printf("%s: %s\n", r + "." + domain, err.Error())
@@ -165,7 +165,7 @@ func doDomain(r, t string) {
 				Logger.Printf("Failed to add record for %s.\n", r + "." + domain)
 			}
 		} else {
-			Logger.Printf("try to update existing %s", r + domain)
+			Debug.Printf("found existing %s", r + "." + domain)
 			for _, record := range resp.DomainRecords.Record {
 				if record.RR == r && record.DomainName == domain && 
 				   record.Type == t && record.Line == "default" {
