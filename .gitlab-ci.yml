@@ -1,4 +1,4 @@
-image: golang:1.12-alpine
+image: golang:1.12-buster
 
 variables:
     DOCKER_IMAGE: registry.furry.top/${CI_PROJECT_PATH}
@@ -19,8 +19,7 @@ stages:
 
 dependencies:
     stage: dependencies
-    script: 
-        - apk add --update --no-cache git
+    script:
         - go mod download
     cache: *modcache
 
