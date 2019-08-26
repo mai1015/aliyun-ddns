@@ -173,7 +173,7 @@ func doDomain(r, t string) {
 						Logger.Printf("found same ip record for %s at default line for id %s.\n", r + "." + domain, record.RecordId)
 						break
 					}
-					Logger.Printf("try to update domain %s: %s", r + domain, record.RecordId)
+					Logger.Printf("try to update domain %s: %s", r + "." + domain, record.RecordId)
 					response, _ := UpdateDomainRecord(record.RecordId, r, ttl, t, ip)
 					if response != nil && response.IsSuccess() {
 						Logger.Printf("Successfully update domain record for %s at default line for id %s.\n", r + "." + domain, response.RecordId)
