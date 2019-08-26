@@ -25,6 +25,7 @@ var (
 	domain string
 	ttl int
 	delete bool
+	get bool
 	value string
 )
 
@@ -48,6 +49,7 @@ func init() {
 	flag.IntVar(&interval, "i", getenvInt("INTERVAL", -1), "time interval. -1 means it will only run once.")
 	flag.IntVar(&ttl, "l", getenvInt("TTL", 600), "time")
 	flag.BoolVar(&delete, "x", false, "delete domains from rr")
+	flag.BoolVar(&get, "g", false, "get values")
 	flag.StringVar(&value, "v", "", "set value")
 	flag.Parse()
 	// dealing
@@ -86,38 +88,26 @@ func getenv(key, fallback string) string {
 }
 
 func main() {
-	if delete {
-		Logger.Println("Staring to delete")
+	if delete || get || len(value) != 0{
+		Logger.Println("Staring to manual task")
 		for _, r := range rr {
 			for _, t := range ts {
-				resp, _ := DelDomainRecord(domain, r, t)
-				if resp != nil {
-					Logger.Printf("remove %s record(s) from domain %s for %s type.\n", resp.TotalCount, resp.RR + "." + domain, t)
-				} else {
-					Logger.Printf("failed to remove record(s) from domain %s.\n", r + "." + domain)
+				if delete {
+					DelDomainRecord(domain, r, t)
+				} else if get {
+					resp, _ := GetDomainRecord(domain, r, t)
+					Logger.Println(resp.DomainRecords)
+				} else if len(value) != 0{
+					AddDomainRecord(domain, r, ttl, t, value)
 				}
 			}
 		}
 		return
 	}
 
-	if len(value) != 0 {
-		Logger.Println("Staring to manual set")
-		for _, r := range rr {
-			for _, t := range ts {
-				resp, _ := AddDomainRecord(domain, r, ttl, t, value)
-				if resp != nil {
-					Logger.Printf("Successfully add domain %s record %s for %s at default line.\n", t, value,  r + "." + domain)
-				} else {
-					Logger.Printf("failed to add record(s) from domain %s.\n", r + "." + domain)
-				}
-			}
-		}
-		return
-	}
-
-	Logger.Println("Staring")
+	Logger.Println("Staring task")
 	for true {
+		Logger.Println("Perform update")
 		routing()
 		if interval == -1 {
 			break
@@ -149,21 +139,13 @@ func doDomain(r, t string) {
 	}
 	Debug.Printf("try to update domain %s for %s type.\n", r + "." + domain, t)
 	resp, err := GetDomainRecord(domain, r, t)
-	if err != nil {
-		Logger.Printf("%s: %s\n", r + "." + domain, err.Error())
-		return
-	}
+	if err != nil {return}
 
 	if (resp.IsSuccess()) {
 		if resp.TotalCount <= 0 {
 			// add record
 			Logger.Printf("found 0 record for %s in default line, try to add record.\n", r + "." + domain)
-			response, _ := AddDomainRecord(domain, r, ttl, t, ip)
-			if response != nil && response.IsSuccess() {
-				Logger.Printf("Successfully add domain record for %s at default line.\n", r + "." + domain)
-			} else {
-				Logger.Printf("Failed to add record for %s.\n", r + "." + domain)
-			}
+			AddDomainRecord(domain, r, ttl, t, ip)
 		} else {
 			Debug.Printf("found existing %s", r + "." + domain)
 			for _, record := range resp.DomainRecords.Record {
@@ -173,13 +155,8 @@ func doDomain(r, t string) {
 						Logger.Printf("found same ip record for %s at default line for id %s.\n", r + "." + domain, record.RecordId)
 						break
 					}
-					Logger.Printf("try to update domain %s: %s", r + "." + domain, record.RecordId)
-					response, _ := UpdateDomainRecord(record.RecordId, r, ttl, t, ip)
-					if response != nil && response.IsSuccess() {
-						Logger.Printf("Successfully update domain record for %s at default line for id %s.\n", r + "." + domain, response.RecordId)
-					} else {
-						Logger.Printf("Failed to update record for %s.\n", r + "." + domain)
-					}
+					Debug.Printf("try to update domain %s: %s", r + "." + domain, record.RecordId)
+					UpdateDomainRecord(record.RecordId, r, ttl, t, ip)
 					break
 				}
 			}
@@ -193,7 +170,9 @@ func getIP(recordType string) string {
 	switch recordType {
 	case "AAAA":
 		return ipv6
-	default:
+	case "A":
 		return ipv4
+	default:
+		return ""
 	}
 }

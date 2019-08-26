@@ -48,7 +48,9 @@ func GetDomainRecord(domain string, rr string, recordType string)  (response *al
 
 	response, err = DDNSClient.DescribeSubDomainRecords(request)
 	if err != nil {
-		Logger.Fatalf("Failed to get domain: %s\n", err.Error())
+		Logger.Printf("Failed to get domain %s for %s type: %s\n", rr + "." + domain, recordType, err.Error())
+	} else {
+		Logger.Printf("Successfully got domain records from %s for %s type: %d\n", rr + "." + domain, recordType, response.TotalCount)
 	}
 	Debug.Printf("response is %#v\n", response)
 	return response, err
@@ -66,7 +68,9 @@ func DelDomainRecord(domain string, rr string, recordType string) (response *ali
 
 	response, err = DDNSClient.DeleteSubDomainRecords(request)
 	if err != nil {
-		Logger.Fatalf("Failed to delete domain: %s\n", err.Error())
+		Logger.Printf("Failed to delete domain %s for %s type: %s\n", rr + "." + domain, recordType, err.Error())
+	} else {
+		Logger.Printf("Successfully remove %s record(s) from domain %s for %s type.\n", response.TotalCount, response.RR + "." + domain, recordType)
 	}
 	Debug.Printf("response is %#v\n", response)
 	return response, err
@@ -86,7 +90,9 @@ func UpdateDomainRecord(id string, rr string, ttl int, recordType string, value 
 
 	response, err = DDNSClient.UpdateDomainRecord(request)
 	if err != nil {
-		Logger.Fatalf("Failed to update domain: %s\n", err.Error())
+		Logger.Printf("Failed to update domain %s for %s type: %s\n", rr + "." + domain, recordType, err.Error())
+	} else {
+		Logger.Printf("Successfully update record from domain %s for %s type: %s\n", rr + "." + domain, recordType, response.RecordId)
 	}
 	Debug.Printf("response is %#v\n", response)
 	return response, err
@@ -107,7 +113,9 @@ func AddDomainRecord(domain string, rr string, ttl int, recordType string, value
 
 	response, err = DDNSClient.AddDomainRecord(request)
 	if err != nil {
-		Logger.Fatalf("Failed to add domain: %s\n", err.Error())
+		Logger.Printf("Failed to add domain %s for %s type: %s\n", rr + "." + domain, recordType, err.Error())
+	} else {
+		Logger.Printf("Successfully add domain %s type record %s for %s at default line: %s.\n", recordType, value,  rr + "." + domain, response.RecordId)
 	}
 	Debug.Printf("response is %#v\n", response)
 	return response, err
