@@ -38,6 +38,8 @@ build:
 docker:
     image: docker:stable
     stage: packaging
+    tags:
+        - docker
     variables:
         DOCKER_DRIVER: overlay2
     services:
